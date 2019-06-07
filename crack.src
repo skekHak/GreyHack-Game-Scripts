@@ -1,0 +1,6 @@
+crack = include_lib("crypto")
+if params.len != 1 then exit("crack [fullpath file]")
+cred_file = get_shell.host_computer.File(params[0])
+if not cred_file then exit("crack [fullpath file]")
+cred = cred_file.content.split(":")
+print(crack.decipher(cred[0],cred[1]))
