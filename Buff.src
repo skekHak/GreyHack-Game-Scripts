@@ -1,0 +1,39 @@
+//Buffer Tester(BuffTest) 0.0.1
+xploit = include_lib("metaxploit")
+
+//Verifying Syntax
+if params.len != 3 then exit("BuffTest Module: Syntax -> BuffTest [ip] [port] [memory].")
+
+//Looking server validity
+server_ip = params[0]
+server_port = params[1]
+
+if get_router(server_ip) == null then exit("BuffTest Module: Could not attempt server [" + server_ip + "].")
+if get_router(server_ip).ping_port(server_port.to_int) == null then exit("BuffTest Module: Could not attempt port [" + server_port + "].")
+
+//Buff Testing
+service = xploit.net_use(server_ip,server_port.to_int)
+if not service then exit("BuffTest Module: Sending packets as failed.")
+dumps = service.dump_libs
+memory = params[2]
+
+print("BuffTest Module: Connected to [<color=green>" + server_ip + "</color>] port [<color=green>" + server_port + "</color>].")
+buffer = user_input("BuffTest Module: Enter a buffer -> <color=green>")
+print("</color>BuffTest Module: [<color=green>Launching main test</color>]")
+print("<color=yellow><b>")
+exploit = dumps.overflow(memory,buffer,"Buffed")
+print("</b></color>")
+result = exploit
+if exploit == null then result = "<color=red>failed</color>"
+print("Bufftest Module: Type of exploit found -> <color=green>" + result + "</color>")
+
+if exploit == null then 
+	print("BuffTest Module: [<color=green>Launching sub injection test</color>]")
+	print("<color=yellow><b>")
+	exploit = dumps.overflow(memory,buffer,"Buffed")
+	print("</b></color>")
+	result = exploit
+	if exploit == null then result = "<color=red>failed</color>"
+	print("Bufftest Module: Type of exploit found -> <color=green>" + result + "</color>")
+end if
+exit()
