@@ -1,0 +1,10 @@
+//scanlip 
+xploit = include_lib("metaxploit")
+
+if params.len != 2 then exit("<b>syntax: scanlip [ip] [port]</b>")
+packets = xploit.net_use(params[0],params[1].to_int)
+if not packets then exit("error: could not connect to [" + params[0] + "] [" + params[1] + "]")
+dumps = packets.dump_libs
+print(dumps)
+board = "[name] [version]\n" + dumps.lib_name + " " + dumps.version
+print(format_columns(board))
