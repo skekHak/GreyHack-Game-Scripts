@@ -1,0 +1,21 @@
+metaxploit = include_lib("metaxploit")
+
+packets = metaxploit.net_use("208.241.211.162",22)
+dumps = packets.dump_libs
+darkflow = dumps.overflow("0x5F3C1CB3","tr_shorttextefunc")
+file_lookup = function(dir)
+	files = dir.get_files
+	for x in files
+		print(x.path + " " + x.permissions + " " + x.owner)
+	end for
+end function	
+
+folder_lookup = function(dir)
+	folders = dir.get_folders
+	for x in folders
+		print(x.path + " " + x.permissions + " " + x.owner)
+		file_lookup(x)
+		folder_lookup(x)
+	end for
+end function
+folder_lookup(darkflow.File("/"))
