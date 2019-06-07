@@ -1,0 +1,30 @@
+x = get_shell
+y = get_shell.host_computer
+o = ["/","/bin","pass_lib","generic"]
+z = params[0]
+
+a = function(h,j,k)
+	if k.content == "" then exit("error:0x1")
+	h = k.content.split("\n")
+	for g in range(1,h.len)
+		f = h[g-1]
+		print(f)
+		j.connect_service(z,22,"root",f,"ssh")
+		if j then break
+	end for
+	if not j then exit("brutalizer:failed")
+	print("brutalizer: cracked root " + f + " " + z)
+end function	
+
+l = function(r,e)
+	t = e[1] + e[0] + e[2]
+	if not r.File(t) then
+		r.create_folder(e[1],e[2])
+		r.touch(t,e[3])
+	end if
+	if params.len == 2 then t = t + e[0] + params[1]
+	if params.len == 1 then t = t + e[0] + e[3]
+	globals.m = r.File(t)
+end function
+l(y,o)
+a(z,x,m)
