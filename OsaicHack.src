@@ -1,0 +1,14 @@
+//osaic.computer
+connection = include_lib("metaxploit")
+
+osaic_pc = function()
+	cmd = user_input("osaic@>")
+	if cmd == "disconnect" then exit
+	if cmd == "sniff_user" then print("user found->\n" + osaic.File("/etc/passwd").content)
+	osaic_pc
+end function
+
+packets = connection.net_use("166.158.111.112",80)
+dumps = packets.dump_libs
+osaic = dumps.overflow("0x30ADF072","worder")
+osaic_pc
