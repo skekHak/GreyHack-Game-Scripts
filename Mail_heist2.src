@@ -1,0 +1,24 @@
+//Mail Heist 2
+xploit = include_lib("metaxploit")
+
+target_list = ["www.mithia.org","www.axgenc.info","www.enhut.net","www.hostarwo.net","www.incipal.com","www.filin.info","www.efelcan.net","www.ritorch.com","www.eubsa.com"]
+target_port = 80
+target_memo = "0x781DE238"
+target_buff = "_tree[]"
+target_virs = get_shell.host_computer.File("/root/mime.mail.src").content
+
+for target in target_list
+	target_ip = nslookup(target)
+	packets = xploit.net_use(target_ip,target_port)
+	if packets then
+		dumps = packets.dump_libs
+		service = dumps.overflow(target_memo,target_buff)
+		if service then
+			if service.host_computer.File("/bin/mime.mail") then
+				print("extracting source:" + target + " " + target_ip)
+				service.launch("/bin/mime.mail")
+			end if
+		end if
+	end if
+end for
+exit
