@@ -1,0 +1,21 @@
+//server.force 
+xploit = include_lib("metaxploit")
+
+//validate syntax
+if params.len < 4 or params.len > 5 then exit("error: syntax server.force [ip] [port] [memory] [buffer] [opt:args]")
+
+//validate server
+server_ip = params[0]
+server_port = params[1]
+if get_router(server_ip) == null then exit("error: could not attempt target")
+if get_router(server_ip).ping_port(server_port.to_int) == null then exit("error: could not attempt target")
+
+//force server
+service = xploit.net_use(server_ip,server_port.to_int)
+if not service then exit("error:failed to send packets")
+server_memory = params[2]
+server_buffer = params[3]
+dumps = service.dump_libs
+globals.server = dumps.overflow(server_memory,server_buffer)
+if typeof(server) == "shell" then server.start_terminal
+if typeof(server) != "shell" then exit("error: could not obtain shell access")
