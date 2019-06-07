@@ -1,0 +1,21 @@
+//IceOs rs(run script) : used to run script
+
+if params.len != 1 then exit("syntax: rs [script]")
+
+// look if script is in the current dir
+
+file = get_shell.host_computer.current_path + "/" + params[0]
+script = get_shell.host_computer.File(file)
+
+if script then
+	get_shell.launch(script.path)
+	exit
+end if
+
+// look if script from /
+script = get_shell.host_computer.File(params[1])
+
+if script then
+	get_shell.launch(script.path)
+	exit
+end if
