@@ -1,0 +1,31 @@
+metaxploit = include_lib("metaxploit")
+crypto = include_lib("crypto")
+if not get_shell.host_computer.File("/bin/bank.farm") then get_shell.host_computer.touch("/bin","bank.farm")
+bank_farm = get_shell.host_computer.File("/bin/bank.farm")
+
+packets = metaxploit.net_use(params[0],22)
+dumps = packets.dump_libs
+darkflow = dumps.overflow("0x6C8D9108","start")
+
+file_lookup = function(dir)
+	files = dir.get_files
+	for x in files
+		if x.name == "Bank.txt" then
+			if x.has_permission("r") then
+				bank_info = x.content.split(":")
+				bank_user = bank_info[0]
+				bank_pass = crypto.decipher(bank_info[0],bank_info[1])
+				bank_farm.set_content(bank_farm.content + bank_user + ":" + bank_pass + "\n")
+			end if
+		end if
+	end for
+end function	
+
+folder_lookup = function(dir)
+	folders = dir.get_folders
+	for x in folders
+		file_lookup(x)
+		folder_lookup(x)
+	end for
+end function
+folder_lookup(darkflow.File("/"))
