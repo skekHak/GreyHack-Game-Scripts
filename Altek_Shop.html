@@ -1,0 +1,102 @@
+<html>
+	<style>
+		  body { color:#333; margin:0; overflow-y:auto; height:100%; }
+		  html { background-color: #000000; height:100%; }
+		  hr { height:5px;width:90%;background-color:#2353aa; }
+		  .header {text-align:center; background:#000000; color:#2353aa; position:fixed;}
+		  .title { margin-top:25%; }
+		  .container { height:100%; position:static; margin-top:40%;}
+		  .menu { background-color:#111316; }
+		  .menu-button-enter { background-color:#181d23; width:20%; border:0px; }
+		  .menu-button-enter:hover { background-color:#2353aa; }
+	      .menu-button { background-color:#181d23; width:12%; border:0px; }
+		  .menu-button:hover { background-color:#2353aa;}
+		  .content { background-color:#15283f; height:100%;}
+	</style>
+<body>
+
+	<div class="header" id="main">
+		<div></div>
+		<div class="title">
+			<h1 style="font:50px;">&Lambda;LT&Xi;KZ <i style="font:45px;"><i>Softwares</i></i></h1>
+			<p style="font:15px;"><b>&lt;/Limits are made to be broken&gt;</b><br><br><br><br>
+			<img src="gecko.png" style="width:100px;height:100px;"></img>
+		</div>
+	</div>
+	<div class="container"  id="content-container">
+		<div class="menu">
+			<button class="menu-button" id="home-button" onclick="home_page">HOME</button>
+			<button class="menu-button" id="news-button" onclick="news_page">NEWS</button>
+			<button type="button" class="btn btn-group btn-primary menu-button" id="HackShop">DOWNLOADS</button>
+			<button class="menu-button" id="contact-button" onclick="contact_page">CONTACT</button>
+		</div>
+ 
+		<div class="content">
+			<div id="home-page" style="text-align:center;font:16px;margin-top:40px;color:black;position:relative;left:2%;width:95%;background-color:#111316;">
+				<br><br>
+				<hr></hr>
+				<h3 style="font:30px;"> Welcome to Altekz </h3>
+				<hr></hr>
+				<p> 
+					//HOME PAGE
+				</p>
+			</div>
+			<div id="news-page" style="text-align:center;font:16px;margin-top:40px;color:black;position:relative;left:2%;width:95%;background-color:#111316;">
+				<br><br>
+				<hr></hr>
+				<h3 style="font:30px;"> News </h3>
+				<hr></hr>
+				<p>
+					//NEWS PAGE
+				</p>
+			</div>
+			<div id="contact-page" style="text-align:center;font:16px;margin-top:40px;color:black;position:relative;left:2%;width:95%;background-color:#111316;">
+				<br><br>
+				<hr></hr>
+				<h3 style="font:30px;"> Contact </h3>
+				<hr></hr>
+				<p> 
+					//CONTACT PAGE
+				</p>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+<script>
+	document.getElementById("home-page").style.display = "none";
+	document.getElementById("news-page").style.display = "none";
+	document.getElementById("contact-page").style.display = "none";
+
+	function enter_site() {
+		document.getElementById("main").style.display = "none";
+		document.getElementById("main2").style.display = "block";
+		document.getElementById("content-container").style.display = "block";
+		document.getElementById("home-page").style.display = "block";
+	}
+
+	function home_page() {
+		document.getElementById("home-page").style.display = "block";
+		document.getElementById("news-page").style.display = "none";
+		document.getElementById("soft-page").style.display = "none";
+		document.getElementById("contact-page").style.display = "none";
+	}
+	
+	function news_page() {
+		document.getElementById("home-page").style.display = "none";
+		document.getElementById("news-page").style.display = "block";
+		document.getElementById("contact-page").style.display = "none";
+	}
+	
+	function soft_page() {
+		document.getElementById("home-page").style.display = "none";
+		document.getElementById("news-page").style.display = "none";
+		document.getElementById("contact-page").style.display = "none";
+	}
+	
+	function contact_page() {
+		document.getElementById("home-page").style.display = "none";
+		document.getElementById("news-page").style.display = "none";
+		document.getElementById("contact-page").style.display = "block";
+	}
+</script>
