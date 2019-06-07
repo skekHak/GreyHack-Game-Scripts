@@ -1,0 +1,4 @@
+//update.server 
+
+server = get_shell.connect_service("161.30.148.65",22,"root","steinst","ssh")
+get_shell.scp_upload(params[0],params[1],server)
