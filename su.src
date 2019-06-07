@@ -1,0 +1,61 @@
+//IceOs su cmd. Used to manage root
+
+// su [1:0]pass [2:1]cmd [3:2]arg
+if params.len < 1 or params.len > 3 then exit("syntax: su [pass] [opt:cmd] [opt:arg]")
+
+// grant root only 
+if params.len == 1 then 
+	connect_root = get_shell("root", params[0])
+	if not connect_root then exit("<color=#f7443b>root authentification denied -></color>")
+	print("<color=#51abff>root elevation granted -></color>")
+	connect_root.start_terminal
+end if
+
+// start a cmd as root
+if params.len == 2 or params.len == 3 then 
+	connect_root = get_shell("root",params[0]) 
+	if not connect_root then exit("<color=#f7443b>root authentification denied -></color>")
+	//look if the file is in bin
+	file = "/bin/" + params[1]
+	cmd = connect_root.host_computer.File(file)
+	if cmd then 
+		if not cmd.is_binary then exit("<color=#51abff>" + params[1] + " is not binary</color>")
+		if cmd.is_folder then exit("<color=#51abff>" + params[1] + " is a folder</color>")
+		if params.len == 2 then connect_root.launch(cmd.path,"")
+		if params.len == 3 then connect_root.launch(cmd.path,params[2])
+		exit
+	end if 
+	
+	//look if the file is in usr/bin
+	file = "/usr/bin/" + params[1]
+	cmd = connect_root.host_computer.File(file)
+	if cmd then 
+		if not cmd.is_binary then exit("<color=#51abff>" + params[1] + " is not binary</color>")
+		if cmd.is_folder then exit("<color=#51abff>" + params[1] + " is a folder</color>")
+		if params.len == 2 then connect_root.launch(cmd.path,"")
+		if params.len == 3 then connect_root.launch(cmd.path,params[2])
+		exit
+	end if 
+	
+	//if the file is in the current dir
+	file = connect_root.host_computer.current_path + "/" + params[1]
+	cmd = connect_root.host_computer.File(file)
+	if cmd then 
+		if not cmd.is_binary then exit("<color=#51abff>" + params[1] + " is not binary</color>")
+		if cmd.is_folder then exit("<color=#51abff>" + params[1] + " is a folder</color>")
+		if params.len == 2 then connect_root.launch(cmd.path,"")
+		if params.len == 3 then connect_root.launch(cmd.path,params[2])
+		exit
+	end if 
+	
+	//the file is not in the current dir, look if exist somewhere else 
+	cmd = connect_root.host_computer.File(params[1])
+	if cmd then 
+		if not cmd.is_binary then exit("<color=#51abff>" + params[1] + " is not binary</color>")
+		if cmd.is_folder then exit("<color=#51abff>" + params[1] + " is a folder</color>")
+		if params.len == 2 then connect_root.launch(cmd.path,"")
+		if params.len == 3 then connect_root.launch(cmd.path,params[2])
+		exit
+	end if
+	print(params[1] + " not found")
+end if
