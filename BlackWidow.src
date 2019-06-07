@@ -1,0 +1,179 @@
+metaxploit = include_lib("metaxploit")
+crypto = include_lib("crypto")
+if not get_shell.host_computer.File("/home/altec/pass.lib") then get_shell.host_computer.touch("/home/altec","pass.lib") // change that 
+if not get_shell.host_computer.File("/home/altec/user.lib") then get_shell.host_computer.touch("/home/altec","user.lib") // change that
+websites = get_shell.host_computer.File("/home/root/Config/Browser.txt").content.split("\n") // change that 
+mango_db = get_shell.connect_service("//you mem db server") /// change that
+pass_lib = get_shell.host_computer.File("/home/altec/pass.lib") // change that 
+user_lib = get_shell.host_computer.File("/home/altec/user.lib") // change that 
+bank_farm = get_shell.host_computer.File("/bin/bank.farm") //change that 
+accounts = 0
+exist = 0
+xfound = 0
+debug = 0 
+
+crack_bank = function(exploits)
+	if typeof(exploits) == "computer" then
+		globals.xfound = 1
+		for user in exploits.File("/home").get_folders
+			bank_path = "/home/"+ user.name + "/Config/Bank.txt"
+			if exploits.File(bank_path) then
+				bank_info = exploits.File(bank_path).content.split(":")
+				bank_number = bank_info[0]
+				bank_pass = crypto.decipher(bank_number,bank_info[1])
+				
+				for pass in pass_lib.content.split("\n")
+					if pass != "" then
+						if pass == bank_pass then globals.exist = 1
+					end if
+				end for
+				if exist == 0 then pass_lib.set_content(pass_lib.content + bank_pass + "\n")
+				
+				for account in bank_farm.content.split("\n")
+					if account != "" then
+						info = account.split(":")
+						acct = info[0]
+						if acct == bank_number then globals.exist = 1
+					end if
+				end for
+				if exist == 0 then bank_farm.set_content(bank_farm.content + bank_number + ":" + bank_pass + "\n")
+				if exist == 0 then accounts = accounts + 1
+				globals.exist = 0
+			end if
+		end for
+	end if
+end function
+
+crack_user = function(exploits)
+	if typeof(exploits) == "computer" then
+		globals.xfound = 1
+		
+		pass_path = "/etc/passwd"
+		if exploits.File(pass_path) then
+			pass_info = exploits.File(pass_path).content.split("\n")
+			for user in pass_info
+				if user != "" then
+					user_info = user.split(":")
+					user_pass = crypto.decipher(user_info[0],user_info[1])
+					
+					for pass in pass_lib.content.split("\n")
+						if pass != "" then
+							if pass == user_pass then globals.exist = 1
+						end if
+					end for
+					if exist == 0 then pass_lib.set_content(pass_lib.content + user_pass + "\n")
+					if exist == 0 then accounts = accounts + 1
+					globals.exist = 0
+					
+					for u in user_lib.content.split("\n")
+						if u != "" then
+							if u == user_info[0] then globals.exist = 1
+						end if
+					end for	
+					if exist == 0 then user_lib.set_content(user_lib.content + user_info[0] + "\n")
+					
+					globals.exist = 0
+				end if
+			end for
+		end if
+		
+	end if
+end function
+
+file_lookup = function(dir)
+	files = dir.get_files
+	for x in files
+		if x.has_permission("x") then 
+			print(x.delete)
+		end if 
+	end for
+end function	
+
+folder_lookup = function(dir)
+	folders = dir.get_folders
+	for x in folders
+		file_lookup(x)
+		folder_lookup(x)
+	end for
+end function
+
+for x in websites
+	server_router = get_router(nslookup(x))
+	server_computers = server_router.computers_lan_ip
+	for y in server_computers
+		for p in server_router.computer_ports(y)
+			ip = nslookup(x)
+			port = p
+			packets = metaxploit.net_use(ip,port.port_number)
+			if packets then
+				dumps = packets.dump_libs
+				if params[0] == "http" then
+					if port.port_number == 80 then
+						for memory in mango_db.host_computer.File("/server/mangodb/memlib/http").get_files
+							memory_trim = memory.name.replace("."," ")
+							memory_info = memory_trim.split(" ")
+							addr = memory_info[0]
+							
+							buffer_list = memory.content.split("\n")
+							for buff in buffer_list
+								data = dumps.overflow(addr,buff,"blackwidow")
+								if params[1] == "bank" then crack_bank(data)
+								if params[1] == "user" then crack_user(data)
+							end for
+							if xfound == 1 then				
+								xfound = 0 
+								debug = debug + 1
+								break
+							end if
+						end for
+					end if
+				end if
+				if params[0] == "ssh" then
+					if port.port_number == 22 then
+						for memory in mango_db.host_computer.File("/server/mangodb/memlib/ssh").get_files
+							memory_trim = memory.name.replace("."," ")
+							memory_info = memory_trim.split(" ")
+							addr = memory_info[0]
+							
+							buffer_list = memory.content.split("\n")
+							for buff in buffer_list
+								data = dumps.overflow(addr,buff,"blackwidow")
+								if params[1] == "bank" then crack_bank(data)
+								if params[1] == "user" then crack_user(data)
+							end for
+							if xfound == 1 then				
+								xfound = 0 
+								debug = debug + 1
+								break
+							end if
+						end for
+					end if
+				end if
+				if params[0] == "sql" then
+					if port.port_number == 3306 or port.port_number == 3307 then
+						for memory in mango_db.host_computer.File("/server/mangodb/memlib/sql").get_files
+							memory_trim = memory.name.replace("."," ")
+							memory_info = memory_trim.split(" ")
+							addr = memory_info[0]
+							
+							buffer_list = memory.content.split("\n")
+							for buff in buffer_list
+								data = dumps.overflow(addr,buff,"blackwidow")
+								if params[1] == "bank" then crack_bank(data)
+								if params[1] == "user" then crack_user(data)
+							end for
+							if xfound == 1 then				
+								xfound = 0 
+								debug = debug + 1
+								break
+							end if
+						end for
+					end if
+				end if
+			end if
+		end for
+	end for
+end for
+
+print("blackwidow:breached " + debug + " computers")
+print("blackwidow:cracked  " + accounts + " in " + time)
