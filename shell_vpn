@@ -1,0 +1,6 @@
+//shell.vpn
+
+proxy = get_shell.connect_service("133.106.157.86",22,"root","blestar","ssh")
+get_shell.scp_upload("/home/hex/system.log","/var",proxy)
+server = proxy.connect_service("225.8.205.120",22,"root","Yankeyes","ssh")
+exit(server.start_terminal)
