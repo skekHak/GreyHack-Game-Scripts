@@ -1,0 +1,49 @@
+
+//verificate & load software dependencies
+if not get_shell.host_computer.File("/lib/metaxploit.so") then exit("error: metaxploit.so not found in /lib")
+if not get_shell.host_computer.File("/lib/crypto.so") then exit("error: crypto.so not found in /lib")
+if not get_shell.host_computer.File("/bin/mediacrawler") then get_shell.host_computer.create_folder("/bin","mediacrawler")
+if not get_shell.host_computer.File("/bin/mediacrawler/mails.dat") then get_shell.host_computer.touch("/bin/mediacrawler","mails.dat")
+
+metaxploit = include_lib("metaxploit")
+md5 = include_lib("crypto")
+mails_data = get_shell.host_computer.File("/bin/mediacrawler/mails.dat")
+
+
+// program
+
+mail_crawl = function()
+	target_list = ["www.anten.net","www.vishawk.info","www.gillst.com","www.asonicorp.info","www.assura.com","www.incipal.org","www.asyscottst.net","www.illamazone.com","www.tingtoneo.info"]
+	mails_count = 0
+	
+	for target in target_list
+		target_ip = nslookup(target)
+		packets = metaxploit.net_use(target_ip,80)
+		dumps = packets.dump_libs
+		shell = dumps.overflow("0x42EFF84A","hash_head")
+		if shell then mails = shell.host_computer.File("/server/conf/UserConfig.sys")
+		if mails then 
+			mails_data.set_content(mails_data.content + "\n" + mails.content)
+			mails_count = mails_count + mails.content.split("\n").len
+		end if
+	end for
+	print("mail crawled : " + mails_count + " emails")
+end function
+
+mail_user = function()
+	user = params[1]
+	mails_list = mails_data.content.split("\n")
+	for mail in mails_list
+		if mail.split("@") then
+			mail_user = mail.split("@")
+			if mail_user[0] == user then print("mail_user = " + mail_user)
+		end if
+		if mail.split(":") then 
+			mail_user = mail.split(":")
+			if mail_user[0] == user then print("mail_user = " + mail_user)
+		end if
+	end for
+end function
+
+if params[0] == "build" then mail_crawl
+if params[0] == "seek" then mail_user
