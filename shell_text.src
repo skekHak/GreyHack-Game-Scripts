@@ -1,0 +1,40 @@
+//stext 
+//syntax stext /path/file
+x = params[0]
+y = x.replace("/"," ")
+z = y.split(" ")
+f = function()
+	if get_shell.host_computer.File(x) then
+		if get_shell.host_computer.File(x).content != "" then n = get_shell.host_computer.File(x).content.split("\n")
+		s = 0
+		for h in n
+			if h != "" then s = s + 1
+			if h != "" then print("[" + s + "]" + " " + h)
+		end for
+		s = s + 1
+	end if
+	if not get_shell.host_computer.File(x) then 
+		a = ""
+		b = z[z.len-1]
+		for c in range(2,z.len)
+			if z[c-1] == b then break
+			a = a + "/" + z[c-1] 
+		end for
+		v = get_shell.host_computer.touch(a,b)
+		if v == null then exit("could not create then file")
+		globals.s = 1
+	end if
+	globals.t = get_shell.host_computer.File(x)
+	globals.i = s
+	e
+end function
+
+e = function()
+	l = user_input("[" + i + "]"+ "@>")
+	if l == "squit" then exit
+	t.set_content(t.content + "\n" + l)
+	i = i + 1
+	e
+end function
+
+f
