@@ -1,0 +1,58 @@
+<html>
+	<style>
+		  body { color:#333; margin:0; overflow-y:auto; height:100%; }
+		  html { background-color: #000000; height:100%; }
+		  hr { height:5px;width:90%;background-color:#2353aa; }
+		  .header {text-align:center; background:#000000; color:white; position:fixed;} 
+		  .container { height:100%; position:static; margin-top:40%;}
+		  .title { margin-top:20%;}
+		  .separator { background-color:#86ba2c; height:3%;}
+		  .content { font:16px; color:#000000;background-color:#d18034; height:100%;}
+	</style>
+<body>
+	<div class="header" id="main">
+		<div class="title">
+			<h1>
+				<br>
+				<font style="color:#d18034;">MANGO</font> <font style="color:#86ba2c;">DB</font>
+			</h1>
+			<p><b>The Best Mem Lib Database.</b></p>
+		</div>
+	</div>
+	<div class="container">
+		<div class="separator">
+		</div>
+		<div class="content">
+			<p>
+				Welcome, Mango DB is a memory leak database.Is a time saver & a powerfull tool.<br>
+				What you can do with it is unlimited.It work in as a online database no download<br>
+				needed, no sign up etc...How you can use it? Well Mango DB as been thinked for<br>
+				programmers and work with list and map linker.Down below theres a how to link<br>
+				your script to the database.<br>
+			</p>
+			<p>
+				To link your script to the database use "connect_service".<br>
+				and connect with the "user:mangodb" "pass:public" on the port<br>
+				"22".<br><br>
+			
+				once your script is connected to the database. Use "host_computer"<br>
+				with ".File(value)", the value can be <br>
+				<ul>
+					<li>/server/mangodb/memlib/http</li>
+					<li>/server/mangodb/memlib/ssh</li>
+					<li>/server/mangodb/memlib/sql</li>
+				</ul>
+				<br><br>
+			
+				Here an example of use.<br><br>
+				<b>mango_db = get_shell.connect_service("56.35.45.131",22,"mangodb","public","ssh")</b><br>
+				<b>http_mem = mango_db.host_computer.File("/server/mangodb/memlib/http").get_files</b><br>
+				<b>for x in http_mem</b><br>
+				<b>		print(x.name)</b><br>
+				<b>end for</b><br>
+				<b>exit</b>
+			</p>	
+		</div>
+	</div>
+</body>
+</html>
