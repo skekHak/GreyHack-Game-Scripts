@@ -1,0 +1,206 @@
+//verificate & load software dependencies
+if not get_shell.host_computer.File("/lib/metaxploit.so") then exit("error: metaxploit.so not found in /lib")
+if not get_shell.host_computer.File("/lib/crypto.so") then exit("error: crypto.so not found in /lib")
+if not get_shell.host_computer.File("/bin/libmgr") then get_shell.host_computer.create_folder("/bin","libmgr")
+if not get_shell.host_computer.File("/bin/libmgr/runtest") then get_shell.host_computer.create_folder("/bin/libmgr","runtest")
+if not get_shell.host_computer.File("/bin/libmgr/http") then get_shell.host_computer.create_folder("/bin/libmgr","http")
+if not get_shell.host_computer.File("/bin/libmgr/ssh") then get_shell.host_computer.create_folder("/bin/libmgr","ssh")
+
+metaxploit = include_lib("metaxploit")
+
+trim_content = function(exploits)
+	text = exploits.content
+	text1 = text.replace("<b>","#")
+	text2 = text1.replace("</b>","#")
+	text3 = text2.replace(".")
+	text4 = text3.replace("\n")
+	text5 = text4.replace("*")
+	text6 = text5.replace("Unsafe")
+	text7 = text6.split(" ")
+	buffers = ""
+	for line in text7
+		if line.code == 35 then
+			buffer = line.replace("#")
+			buff_value = buffer.values
+			value = 0 
+			for i in buff_value
+				value = value + i.code
+			end for
+			if value != 165 then
+				if value != 1608 then
+					if value != 155 then
+						buffers = buffers + buffer + " "
+					end if
+				end if
+			end if
+		end if
+	end for
+	list = buffers.split(" ")
+	exploits.set_content("")
+	for buff in list
+		if buff != "" then
+			if buff != "netso" and buff != "initso" then 
+				exploits.set_content(exploits.content + "\n" + buff)
+			end if
+		end if
+	end for	
+end function
+
+scan = function()
+	if params.len == 3 then exit("syntax: lib.mgr scan [/path/lib] | list [service] [opt:version]")
+	//look for lib existence
+	lib_path = params[1]
+	lib_file = get_shell.host_computer.File(lib_path)
+	if not lib_file then exit("error: could not found " + lib_path)
+	
+	//scan lib
+	lib = metaxploit.load(lib_file.path)
+	if not lib then exit("error: could not read " + lib_path)
+	memory_list = metaxploit.scan(lib)
+	
+	if lib.lib_name == "libhttp.so" then
+		for memory in memory_list
+			file_name = memory + "." + lib.version
+			file_path = "/bin/libmgr/http/" + file_name 
+			get_shell.host_computer.touch("/bin/libmgr/http",file_name)
+			file = get_shell.host_computer.File(file_path)
+			file.set_content(metaxploit.scan_address(lib,memory))
+			trim_content(file)
+		end for
+		exit
+	end if
+	
+	if lib.lib_name == "libssh.so" then
+		for memory in memory_list
+			file_name = memory + "." + lib.version
+			file_path = "/bin/libmgr/ssh/" + file_name 
+			get_shell.host_computer.touch("/bin/libmgr/ssh",file_name)
+			file = get_shell.host_computer.File(file_path)
+			file.set_content(metaxploit.scan_address(lib,memory))
+			trim_content(file)
+		end for
+		exit
+	end if
+	
+	exit("error: " + lib.lib_name + " is not supported")
+end function
+
+list = function()
+	
+	if params[1] == "http" then
+		folder = get_shell.host_computer.File("/bin/libmgr/http").get_files
+		board = ""
+		for file in folder 
+			memory_file = file.name.replace("."," ")
+			memory = memory_file.split(" ")
+			memory_name = memory[0]
+			memory_version = memory[1] + "." + memory[2] + "." + memory[3]
+			if params.len == 2 then board = board + memory_name + " " + memory_version + "\n"
+			if params.len == 3 then 
+				if memory_version == params[2] then board = board + memory_name + " " + memory_version + "\n"
+			end if
+		end for
+		if board != "" then exit(format_columns(board))
+		if board == "" then exit("error: could not found memory matching " + params[2] + " version")
+	end if
+	
+	if params[1] == "ssh" then
+		folder = get_shell.host_computer.File("/bin/libmgr/ssh").get_files
+		board = ""
+		for file in folder 
+			memory_file = file.name.replace("."," ")
+			memory = memory_file.split(" ")
+			memory_name = memory[0]
+			memory_version = memory[1] + "." + memory[2] + "." + memory[3]
+			if params.len == 2 then board = board + memory_name + " " + memory_version + "\n"
+			if params.len == 3 then 
+				if memory_version == params[2] then board = board + memory_name + " " + memory_version + "\n"
+			end if
+		end for
+		if board != "" then exit(format_columns(board))
+		if board == "" then exit("error: could not found memory matching " + params[2] + " version")
+	end if
+	
+	exit("error: database does not content data on " + params[1] + " service")
+end function
+
+test = function(ip,port)
+	if not is_valid_ip(ip) then exit("error: invalid ip")
+	log_path = "/bin/libmgr/runtest/" + ip
+	log = get_shell.host_computer.File(log_path)
+	if not log then 
+		get_shell.host_computer.touch("/bin/libmgr/runtest",ip)
+		log = get_shell.host_computer.File(log_path)
+	end if
+	
+	packet = metaxploit.net_use(ip,port.to_int)
+	if packet then
+		dump = packet.dump_libs
+		if params[3] == "http" then
+			memory_list = get_shell.host_computer.File("/bin/libmgr/http").get_files
+			log_content = ""
+			for memory in memory_list
+				memory_trim = memory.name.replace("."," ")
+				memory_info = memory_trim.split(" ")
+				memory_name = memory_info[0]
+				memory_version = memory_info[1] + "." + memory_info[2] + "." + memory_info[3]
+				if params[4] == memory_version then
+					buffers = memory.content.split("\n")
+					for buff in buffers
+						if buff != "" then
+							result = dump.overflow(memory_name,buff,"wacked")
+							log_content = log_content + "http" + memory_version + " " + memory_name + " " + buff + " " + typeof(result) + " " + current_date + "\n"
+						end if
+					end for
+				end if
+			end for
+			log.set_content(log.content + "\n" + log_content)
+		end if
+		if params[3] == "ssh" then
+			memory_list = get_shell.host_computer.File("/bin/libmgr/ssh").get_files
+			log_content = ""
+			for memory in memory_list
+				memory_trim = memory.name.replace("."," ")
+				memory_info = memory_trim.split(" ")
+				memory_name = memory_info[0]
+				memory_version = memory_info[1] + "." + memory_info[2] + "." + memory_info[3]
+				if params[4] == memory_version then
+					buffers = memory.content.split("\n")
+					for buff in buffers
+						if buff != "" then
+							result = dump.overflow(memory_name,buff,"wacked")
+							log_content = log_content + "ssh" + memory_version + " " + memory_name + " " + buff + " " + typeof(result) + " " + current_date + "\n"
+						end if
+					end for
+				end if
+			end for
+			log.set_content(log.content + "\n" + log_content)
+		end if
+	end if
+	exit("error: could attempt " + ip + " " + port)
+end function
+
+result = function()
+	log_path = "/bin/libmgr/runtest/" + params[1]
+	if not get_shell.host_computer.File(log_path) then exit("error: could not found data for " + params[1])
+	print(format_columns(get_shell.host_computer.File(log_path).content))
+end function
+
+//program
+if params.len < 2 or params.len > 5 then exit("syntax: lib.mgr scan [/path/lib] | list [service] [opt:version] | test [ip] [port] [service] [version] | result [ip]")
+
+if params[0] == "scan" then 
+	scan
+end if
+
+if params[0] == "list" then
+	list
+end if
+
+if params[0] == "test" then 
+	test(params[1],params[2])
+end if
+
+if params[0] == "result" then
+	result
+end if
