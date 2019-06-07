@@ -1,0 +1,98 @@
+//Hploit http exploits
+globals.hploit = include_lib("metaxploit")
+globals.crack = include_lib("crypto")
+
+print("/ $$  / $$         / $$        / $$  / $$")
+print("| $$  | $$         | $$        |__/  | $$")  
+print("| $$  | $$ /$$$$$$ | $$ /$$$$$$ /$$ /$$$$$$")  
+print("| $$$$$$$$/ $$__  $| $$/$$__  $| $$/_  $$_/")
+print("| $$__  $$| $$  \ $| $$|$$  \ $| $$  | $$")
+print("| $$  | $$| $$  | $| $$|$$  | $| $$  | $$")
+print("| $$  | $$| $$$$$$$| $$| $$$$$$| $$  | $$")
+print("|__/  |__/| $$____/|__/\______/|__/  |__/ Xsoft ®") 
+print("__________| $$___________________________________") 
+print("          | $$")                            
+print("          |__/")
+
+connect_guest = function()
+	ip = user_input("target ip: ")
+	packets = hploit.net_use(ip,80)
+	dumps = packets.dump_libs
+	//Dont forget to get this to date current(1.1.2)
+	globals.service = dumps.overflow("0x5760C0CD","histvar(header[rans)]")
+	if globals.service != null then
+		connect_menu
+	end if	
+	globals.service = dumps.overflow("0x66A8A464","am(intering[_dis)]")
+	if globals.service != null then
+		connect_menu
+	end if		
+	print("could not attempt the target!")
+	main_menu 
+end function
+
+connect_menu = function()
+	print("\n")
+	print("[1] crack root password")
+	print("[2] crack bank") 
+	print("[3] sniff leaking data")
+	print("[4] open active shell")
+	print("[5] return to main")
+	print("\n")
+	choice = user_input("option: ")
+	if choice.to_int < 1 or choice.to_int > 5 then connect_menu
+	if choice == "1" then root_access
+	if choice == "2" then crack_bank
+	if choice == "3" then sniff_leak
+	if choice == "4" then target_shell
+	if choice == "5" then main_menu
+end function
+
+main_menu = function()
+	print("\n")
+	print("[1] connect target as guest")
+	print("[2] exit")
+	print("\n")
+	choice = user_input("option: ")
+	if choice.to_int < 1 or choice.to_int > 2 then main_menu
+	if choice == "1" then connect_guest
+	if choice == "2" then exit()
+end function
+
+root_access = function()
+	passwds = globals.service.host_computer.File("/etc/passwd").content.split("\n")
+	if not passwds then print("could not crack root!")
+	globals.root_cred = passwds[0].split(":")
+	root_pass = crack.decipher(root_cred[0],root_cred[1])
+	print("cracked root password is " + root_pass)
+	connect_menu
+end function
+
+sniff_leak = function()
+	globals.lib_file = dumps.overflow("0x5760C0CD","positializelan")
+	if globals.lib_file != null then
+		libs = globals.lib_file
+		for lib in libs
+			print(lib)
+			print("\n")
+		end for
+	end if
+	connect_menu
+end function
+
+crack_bank = function()
+	users = globals.service.host_computer.File("/home").get_folders
+	for user in users
+		bank_file = "/home/" + user.name + "/Config/Bank.txt"
+		bank_cred = globals.service.host_computer.File(bank_file).content.split(":")
+		if bank_cred then print("cracked account: " + bank_cred[0] + " password is "+ crack.decipher(bank_cred[0],bank_cred[1]))
+	end for
+	connect_menu
+end function
+
+target_shell = function()
+	globals.service.start_terminal
+end function
+
+//Main
+main_menu
