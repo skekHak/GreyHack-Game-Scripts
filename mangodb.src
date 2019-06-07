@@ -1,0 +1,102 @@
+metaxploit = include_lib("metaxploit")
+
+if not mango_db.host_computer.File("/server/mangodb/memlib/http") then mango_db.host_computer.create_folder("/server/mangodb/memlib","http")
+if not mango_db.host_computer.File("/server/mangodb/memlib/ssh") then mango_db.host_computer.create_folder("/server/mangodb/memlib","ssh")
+if not mango_db.host_computer.File("/server/mangodb/memlib/sql") then mango_db.host_computer.create_folder("/server/mangodb/memlib","sql")
+
+trim_content = function(exploits)
+	text = exploits.content
+	text1 = text.replace("<b>","#")
+	text2 = text1.replace("</b>","#")
+	text3 = text2.replace(".")
+	text4 = text3.replace("\n")
+	text5 = text4.replace("*")
+	text6 = text5.replace("Unsafe")
+	text7 = text6.split(" ")
+	buffers = ""
+	for line in text7
+		if line.code == 35 then
+			buffer = line.replace("#")
+			buff_value = buffer.values
+			value = 0 
+			for i in buff_value
+				value = value + i.code
+			end for
+			if value != 165 then
+				if value != 1608 then
+					if value != 155 then
+						buffers = buffers + buffer + " "
+					end if
+				end if
+			end if
+		end if
+	end for
+	list = buffers.split(" ")
+	exploits.set_content("")
+	for buff in list
+		if buff != "" then
+			if buff != "netso" and buff != "initso" then 
+				exploits.set_content(exploits.content + "\n" + buff)
+			end if
+		end if
+	end for	
+	exploits.chmod("u-wx")
+	exploits.chmod("g-wx")
+	exploits.chmod("o-wx")
+	
+end function
+
+scan = function()
+	if params.len == 3 then exit("syntax: mango.db upload [/path/lib]")
+	//look for lib existence
+	lib_path = params[1]
+	lib_file = get_shell.host_computer.File(lib_path)
+	if not lib_file then exit("error: could not found " + lib_path)
+	
+	//scan lib
+	lib = metaxploit.load(lib_file.path)
+	if not lib then exit("error: could not read " + lib_path)
+	memory_list = metaxploit.scan(lib)
+	
+	if lib.lib_name == "libhttp.so" then
+		for memory in memory_list
+			file_name = memory + "." + lib.version
+			file_path = "/server/mangodb/memlib/http/" + file_name 
+			mango_db.host_computer.touch("/server/mangodb/memlib/http",file_name)
+			file = mango_db.host_computer.File(file_path)
+			file.set_content(metaxploit.scan_address(lib,memory))
+			trim_content(file)
+		end for
+		exit
+	end if
+	
+	if lib.lib_name == "libssh.so" then
+		for memory in memory_list
+			file_name = memory + "." + lib.version
+			file_path = "/server/mangodb/memlib/ssh/" + file_name 
+			mango_db.host_computer.touch("/server/mangodb/memlib/ssh",file_name)
+			file = mango_db.host_computer.File(file_path)
+			file.set_content(metaxploit.scan_address(lib,memory))
+			trim_content(file)
+		end for
+		exit
+	end if
+	
+	if lib.lib_name == "libsql.so" then
+		for memory in memory_list
+			file_name = memory + "." + lib.version
+			file_path = "/server/mangodb/memlib/sql/" + file_name 
+			mango_db.host_computer.touch("/server/mangodb/memlib/sql",file_name)
+			file = mango_db.host_computer.File(file_path)
+			file.set_content(metaxploit.scan_address(lib,memory))
+			trim_content(file)
+		end for
+		exit
+	end if
+	
+	exit("error: " + lib.lib_name + " is not supported")
+end function
+
+if params[0] == "upload" then 
+	scan
+end if
