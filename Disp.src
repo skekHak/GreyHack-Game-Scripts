@@ -1,0 +1,28 @@
+//IceOs : disp use to display the content of a file
+
+if params.len != 1 then exit("syntax: disp [file] | [/path/file]")
+
+//look if file is in the current dir
+dir = get_shell.host_computer.current_path + "/" + params[0]
+file = get_shell.host_computer.File(dir)
+if file then
+	if file.is_binary then exit("<color=#51abff>cannot display binary file</color>")
+	if file.has_permission("r") then
+		print("\n<color=#51abff>" + file.content + "</color>\n")
+		exit
+	end if
+	exit("<color=#f7443b>permission denied</color>")
+end if
+
+//look file from /
+file = get_shell.host_computer.File(params[0])
+if file then
+	if file.is_binary then exit("<color=#51abff>cannot display binary file</color>")
+	if file.has_permission("r") then
+		print("\n<color=#51abff>" + file.content + "</color>\n")
+		exit
+	end if
+	exit("<color=#f7443b>permission denied</color>")
+end if
+
+exit("<color=#51abff>could not found " + params[0] + "</color>")
