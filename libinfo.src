@@ -1,0 +1,41 @@
+
+xploit = include_lib("metaxploit")
+
+if params.len != 2 then exit("syntax: lib.mgr scan [/path/lib] or dump [memory]")
+
+dump_mem = function()
+	mem_file = get_shell.host_computer.File("/bin/scanlib.log").content
+	mem = mem_file.split(" ")
+	lib_file = get_shell.host_computer.File(mem[0])
+	lib = xploit.load(lib_file.path)
+	get_shell.host_computer.touch("/bin", params[1])
+	dump_file = "/bin/" + params[1]
+	dump = get_shell.host_computer.File(dump_file)
+	dump.set_content(lib.scan_address(params[1]))
+	exit
+end function
+
+scan_lib = function()
+	// looking for lib
+	lib_path = params[1]
+	lib_file = get_shell.host_computer.File(lib_path)
+	if not lib_file then exit("error: could not find")
+	
+	// load lib & make board with result of scan
+	globals.lib = xploit.load(lib_file.path)
+	memory_list = lib.scan
+	board = "lib -> " + lib.lib_name + " " + lib.version + "\n"
+	get_shell.host_computer.touch("/bin", "scanlib.log")
+	log_file = "/bin/" + "scanlib.log"
+	log = get_shell.host_computer.File(log_file)
+	log.set_content(lib_path + " ")
+	for memory in memory_list
+		board = board + "mem -> <color=#8e18c9>" + memory + "</color>\n"
+		log.set_content(log.content + memory + " ")
+	end for
+	exit(format_columns(board))
+end function
+
+if params[0] == "scan" then scan_lib
+if params[0] == "dump" then dump_mem
+exit("syntax: lib.mgr scan [/path/lib] or dump [memory]")
