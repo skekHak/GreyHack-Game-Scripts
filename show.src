@@ -1,0 +1,54 @@
+//IceOs show cmd. Used to display file and folder in a given path
+globals.board = ""
+globals.dir = ""
+
+list_folders = function()
+	folders = get_shell.host_computer.File(dir).get_folders
+	if folders.len > 0 then
+		for folder in folders
+			globals.board = board + folder.permissions + " <color=green>" + folder.owner + "</color> " + folder.size + " <color=#f7443b>" + folder.name + "</color>\n"
+		end for
+	end if 
+end function
+
+list_files = function()
+	files = get_shell.host_computer.File(dir).get_files
+	if files.len > 0 then
+		for file in files
+			if not file.is_binary then filename = "<color=white>" + file.name + "</color>"
+			if file.is_binary then filename = "<color=#9ef442>" + file.name + "</color>"
+			globals.board = board + file.permissions + " <color=green>" + file.owner + "</color> " + file.size + " " + filename + "\n"
+		end for
+	end if
+end function
+
+if params.len > 1 then exit("syntax: show | show [path]")
+
+//params as argument
+if params.len == 1 then
+	print("<color=#51abff>")
+	test_path = get_shell.host_computer.File(params[0])
+	if not test_path then exit("could not find path</color>")
+	dir = get_shell.host_computer.File(params[0]).path
+	if not get_shell.host_computer.File(dir).is_folder then exit("could not find the path</color>")
+	if not get_shell.host_computer.File(dir).has_permission("r") then exit("<color=#f7443b>permission denied</color></color>")
+	list_folders
+	list_files
+	print(format_columns(board + "</color>"))
+	exit
+end if
+
+//params as no argument
+if params.len != 1 then
+	print("<color=#51abff>")
+	dir = get_shell.host_computer.current_path
+	if not get_shell.host_computer.File(dir).is_folder then exit("could not find the path</color>")
+	if not get_shell.host_computer.File(dir).has_permission("r") then exit("<color=#f7443b>permission denied</color></color>")
+	list_folders
+	list_files
+	print(format_columns(board + "</color>"))
+	exit
+end if
+
+//the user went to far
+exit("fatal error: 0x345c, program as suddently stopped")
