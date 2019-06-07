@@ -1,0 +1,39 @@
+//IceOs : man use to display information about command
+
+if params.len != 1 then exit("syntax: man list | [cmd]")
+
+if params[0] == "list" then
+	disp = "disp         display file content\n"
+	show = "show         list the content of a folder\n"
+	su = "su           grant root access or execute a program as root\n"
+	serverforce = "server.force gain shell access with the given memory & buffer\n"
+	bufftest = "buff.test    test a memory vulnerability with the given buffer\n"
+	board = disp + show + su + serverforce + bufftest
+	print("\n<color=#51abff>" + board + "</color>\n")
+	exit
+end if 
+
+if params[0] == "disp" then
+	print("\n<color=#51abff>[disp]  is used to display none-binary file content\n[usage] disp [file] | [/path/file]</color>\n")
+	exit
+end if
+
+if params[0] == "show" then
+	print("\n<color=#51abff>[show]  is used to display folder content\n[usage] show [path]\n[note]  if typed without argument it will display the current folder content</color>\n")
+	exit
+end if
+
+if params[0] == "su" then
+	print("\n<color=#51abff>[su]    is used to grant root access, it can simply connect to root or execute a command as\n[usage] su [pass] | [pass] [/path/program]\n[note]  if path not specify it will look in the current directory</color>\n")
+	exit
+end if
+
+if params[0] == "server.force" then
+	print("\n<color=#51abff>[server.force]  is used to force shell access on the given ip with the given buff & memory address\n[usage]         server.force [ip] [port] [memory] [opt:args]</color>\n")
+	exit
+end if
+
+if params[0] == "buff.test" then
+	print("\n<color=#51abff>[buff.test]  is used to test buffer on the given memory address\n[usage]      buff.test [ip] [port] [memory]</color>\n")
+	exit
+end if
