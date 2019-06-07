@@ -1,0 +1,126 @@
+//Hploit http exploits
+globals.hploit = include_lib("metaxploit")
+globals.crack = include_lib("crypto")
+
+print("\n") 
+print("<color=#99c62b>    _/_/_/_/  _/    _/  _/_/_/_/_/  _/_/_/_/_/    _/_/_/    _/_/    _/_/_/_/_/  _/_/_/_/</color>")   
+print("<color=#99c62b>   _/        _/    _/        _/          _/    _/        _/    _/      _/      _/       </color>") 
+print("<color=#99c62b>  _/_/_/    _/    _/      _/          _/      _/  _/_/  _/_/_/_/      _/      _/_/_/    </color>") 
+print("<color=#99c62b> _/        _/    _/    _/          _/        _/    _/  _/    _/      _/      _/         </color>") 
+print("<color=#99c62b>_/          _/_/    _/_/_/_/_/  _/_/_/_/_/    _/_/_/  _/    _/      _/      _/_/_/_/    </color>")
+
+load_mem = function()
+	print("\n")
+	print("[1] load http mem")
+	print("[2] load smtp mem")
+	print("[3] return to main")
+	print("\n")
+	choice = user_input("choice: ")
+	if choice.to_int < 1 or choice.to_int > 3 then load_mem
+	if choice == "3" then main_menu
+	
+	if choice == "1" then
+		memploit_lib = get_shell.host_computer.File("/bin/mem/http").get_files
+		print("\n<color=#99c62b>[http memory list]</color>")
+		for mem in memploit_lib
+			print("<color=#99c62b>"+mem.name+"</color>")
+		end for
+	end if
+	
+	if choice == "2" then
+		memploit_lib = get_shell.host_computer.File("/bin/mem/smtp").get_files
+		print("\n<color=#99c62b>[smtp memory list]</color>")
+		for mem in memploit_lib
+			print("<color=#99c62b>"+mem.name+"</color>")
+		end for
+	end if	
+	
+	load_mem
+end function
+
+fuzzing = function()
+	print("\n")
+	print("[1] http fuzzing")
+	print("[2] smtp fuzzing")
+	print("[3] return to main")
+	print("\n")
+	choice = user_input("choice: ")
+	if choice.to_int < 1 or choice.to_int > 3 then fuzzing
+	if choice == "3" then main_menu
+
+	if choice == "1" then
+		mem = user_input("enter the memory to access: ")
+		mem_path = "/bin/mem/http/" + mem
+		mem_file = get_shell.host_computer.File(mem_path).content.split("\n")
+	
+		if mem_file then 
+
+			print("\n")
+			print("<color=#99c62b>[buffers in " + mem + "]</color>")
+			for buffer in mem_file
+				print("<color=#99c62b>"+buffer+"</color>")
+			end for
+			print("\n")
+			ubuffer = user_input("select a buffer: ")
+			ip = user_input("server ip: ")
+			port = user_input("server port: ")
+			packets = hploit.net_use(ip,port.to_int)
+			dumps = packets.dump_libs
+			print("<color=#99c62b>[fuzzing ip:" + ip + " port:" + port + " mem:" + mem + " buffer:" + ubuffer + "]</color>")	
+			print("\n")
+			service = dumps.overflow(mem,ubuffer)
+			if service == null then service = "failure"
+			print("<color=#99c62b>[type of exploit: " + service + "]</color>")
+			print("\n")
+
+		fuzzing
+		end if 
+	end if
+	
+	if choice == "2" then
+		mem = user_input("enter the memory to access: ")
+		mem_path = "/bin/mem/smtp/" + mem
+		mem_file = get_shell.host_computer.File(mem_path).content.split("\n")
+	
+		if mem_file then 
+
+			print("\n")
+			print("<color=#99c62b>[buffers in " + mem + "]</color>")
+			for buffer in mem_file
+				print("<color=#99c62b>"+buffer+"</color>")
+			end for
+			print("\n")
+			ubuffer = user_input("select a buffer: ")
+			ip = user_input("server ip: ")
+			port = user_input("server port: ")
+			packets = hploit.net_use(ip,port.to_int)
+			dumps = packets.dump_libs
+			print("<color=#99c62b>[fuzzing ip:" + ip + " port:" + port + " mem:" + mem + " buffer:" + ubuffer + "]</color>")	
+			print("\n")
+			service = dumps.overflow(mem,ubuffer)
+			if service == null then service = "failure"
+			print("<color=#99c62b>[type of exploit: " + service + "]</color>")
+			print("\n")
+
+		fuzzing
+		end if 
+	end if	
+	
+	print("memory not found!")
+	fuzzing
+end function
+
+main_menu = function()
+	print("\n")
+	print("<color=#99c62b>[1] load memories</color>")
+	print("<color=#99c62b>[2] fuzzing server</color>")
+	print("<color=#99c62b>[3] exit</color>")
+	print("\n")
+	choice = user_input("choice: ")
+	if choice.to_int < 1 or choice.to_int > 3 then main_menu
+	if choice == "1" then load_mem
+	if choice == "2" then fuzzing
+	if choice == "3" then exit
+end function
+
+main_menu
